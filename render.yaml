@@ -1,9 +1,11 @@
 services:
-  - type: web
+  - type: static
     name: asap-backoffice
-    runtime: node
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    publishPath: dist
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: VITE_STRAPI_API_URL
+        value: https://my-strapi-api-0fz5.onrender.com
+      - key: VITE_STRAPI_TOKEN
+        # ค่านี้ควรตั้งในหน้า Dashboard ของ Render เพื่อความปลอดภัย
+        value: 648f97f72be7b2de81d9498a7dcaa24fd72eb0d1599f51407d7b505c6137e04a064c7143086fe35214367d737ef522b85f0fe74990750815c52c756f805c72df31c9dd5525ffdf0a68cc07e2e80bd361e5a64a068c334425be78a8147abf8bb31db5b0b81b57ae753504e96f5bcddcb4c4b4bcd3e6a24b80da5d846e1af77e40
