@@ -88,11 +88,33 @@ export const useDashboardStore = defineStore('dashboard', {
             };
 
             this.userBehavior = {
-                labels: ['หน้าแรก (Home)', 'จองรถ (Booking)', 'โปรโมชัน (Promo)', 'ติดต่อเรา (Contact)'],
+                labels: [
+                    'หน้าแรก (Home)',
+                    'จองรถเช่า (Booking)',
+                    'โปรโมชัน (Promotions)',
+                    'คูปองส่วนลด (Coupons)',
+                    'บทความ (Articles)',
+                    'เช็คอินออนไลน์ (Check-in)',
+                    'พลาซ่า (Plaza)',
+                    'ติดต่อเรา (Contact)',
+                    'คำถามที่พบบ่อย (FAQ)',
+                    'นโยบายความเป็นส่วนตัว (Privacy)'
+                ],
                 datasets: [
                     {
-                        backgroundColor: ['#FF595A', '#2574FF', '#36B37E', '#FFAB00'],
-                        data: [45, 30, 15, 10]
+                        backgroundColor: [
+                            '#FF595A', // Red
+                            '#2574FF', // Blue
+                            '#36B37E', // Green
+                            '#FFAB00', // Yellow
+                            '#6366F1', // Indigo
+                            '#EC4899', // Pink
+                            '#14B8A6', // Teal
+                            '#F59E0B', // Amber
+                            '#8B5CF6', // Violet
+                            '#9CA3AF'  // Gray
+                        ],
+                        data: [25, 20, 15, 12, 8, 7, 5, 4, 2, 2]
                     }
                 ]
             };
@@ -103,6 +125,78 @@ export const useDashboardStore = defineStore('dashboard', {
                 trendDirection: 'up', // up, down, neutral
                 history: [3, 4, 3.5, 4.2, 4.5, 4.8, 5] // Sparkline data
             };
+
+            // Realistic mock data for pending check-ins
+            this.pendingCheckinsList = [
+                {
+                    id: 1,
+                    bookingNumber: 'BK-2026020401',
+                    customerName: 'คุณสมชาย ใจดี',
+                    date: '04/02/2569',
+                    status: 'pending'
+                },
+                {
+                    id: 2,
+                    bookingNumber: 'BK-2026020402',
+                    customerName: 'คุณสมหญิง รักสวย',
+                    date: '04/02/2569',
+                    status: 'pending'
+                },
+                {
+                    id: 3,
+                    bookingNumber: 'BK-2026020403',
+                    customerName: 'คุณวิชัย มั่งมี',
+                    date: '04/02/2569',
+                    status: 'pending'
+                },
+                {
+                    id: 4,
+                    bookingNumber: 'BK-2026020305',
+                    customerName: 'คุณนภา แสงทอง',
+                    date: '03/02/2569',
+                    status: 'reviewed'
+                },
+                {
+                    id: 5,
+                    bookingNumber: 'BK-2026020306',
+                    customerName: 'คุณประยุทธ์ รักชาติ',
+                    date: '03/02/2569',
+                    status: 'reviewed'
+                }
+            ];
+
+            // Realistic stats
+            this.stats = {
+                totalOrders: 156,
+                carPickups: 42,
+                pendingCheckins: 3,
+                unreadMessages: 7
+            };
+
+            // Active promotions mock
+            this.activePromotions = [
+                {
+                    id: 1,
+                    title: 'โปรซัมเมอร์ลดแรง 30%',
+                    image: 'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?w=200&h=150&fit=crop',
+                    startDate: '01/02/2569',
+                    endDate: '28/02/2569'
+                },
+                {
+                    id: 2,
+                    title: 'เช่ารถ 3 วันฟรี 1 วัน',
+                    image: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=200&h=150&fit=crop',
+                    startDate: '01/02/2569',
+                    endDate: '15/02/2569'
+                },
+                {
+                    id: 3,
+                    title: 'สมาชิกใหม่รับส่วนลด 500฿',
+                    image: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200&h=150&fit=crop',
+                    startDate: '01/01/2569',
+                    endDate: '31/03/2569'
+                }
+            ];
         },
 
         async fetchAllData() {

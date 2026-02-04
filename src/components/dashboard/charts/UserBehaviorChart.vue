@@ -2,6 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <h3 class="chart-title">หน้ายอดนิยม (Popular Pages)</h3>
+      <p class="chart-subtitle">อ้างอิงจากยอดผู้เข้าชมทั้งหมด</p>
     </div>
     <div class="chart-body">
       <div class="chart-container">
@@ -74,25 +75,45 @@ const chartOptions = {
   color: #111827;
 }
 
+.chart-subtitle {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-top: 4px;
+}
+
 .chart-body {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
-  height: 200px;
+  min-height: 220px;
 }
 
 .chart-container {
-  flex: 1;
-  height: 100%;
+  flex-shrink: 0;
+  width: 160px;
+  height: 160px;
   position: relative;
-  max-width: 180px;
 }
 
 .legend-list {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 8px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #E5E7EB;
+    border-radius: 3px;
+    &:hover {
+      background: #D1D5DB;
+    }
+  }
 }
 
 .legend-item {

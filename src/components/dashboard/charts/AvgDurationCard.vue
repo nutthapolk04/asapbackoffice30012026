@@ -1,37 +1,40 @@
 <template>
-  <div class="metric-card">
-    <div class="metric-header">
-      <div class="metric-icon">
+  <div class="duration-card">
+    <div class="duration-header">
+      <div class="icon-wrapper">
         <el-icon><Timer /></el-icon>
       </div>
-      <h3 class="metric-title">ระยะเวลาเข้าชมเฉลี่ย (Avg. Visit Duration)</h3>
+      <span class="duration-label">ระยะเวลาเข้าชมเฉลี่ย</span>
     </div>
     
-    <div class="metric-content">
-      <div class="metric-value">{{ store.avgDuration?.value || '0m 0s' }}</div>
-      <div class="metric-trend" :class="trendClass">
+    <div class="duration-main">
+      <div class="duration-value">{{ store.avgDuration?.value || '0m 0s' }}</div>
+      <div class="duration-trend" :class="trendClass">
         <el-icon v-if="trendDirection === 'up'"><ArrowUp /></el-icon>
         <el-icon v-else-if="trendDirection === 'down'"><ArrowDown /></el-icon>
-        <el-icon v-else><Minus /></el-icon>
-        <span>{{ store.avgDuration?.trend || '0%' }} vs สัปดาห์ก่อน</span>
+        <span>{{ store.avgDuration?.trend || '0%' }} จากสัปดาห์ก่อน</span>
       </div>
     </div>
 
-    <!-- Simple Sparkline Representation -->
-    <div class="sparkline-container" v-if="store.avgDuration?.history">
-        <div 
-            v-for="(val, index) in normalizedHistory" 
-            :key="index" 
-            class="spark-bar"
-            :style="{ height: `${val}%` }"
-        ></div>
+    <!-- Modern Wave Chart -->
+    <div class="wave-chart" v-if="store.avgDuration?.history">
+      <svg viewBox="0 0 200 50" preserveAspectRatio="none" class="wave-svg">
+        <defs>
+          <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#6366F1;stop-opacity:0.4" />
+            <stop offset="100%" style="stop-color:#6366F1;stop-opacity:0.05" />
+          </linearGradient>
+        </defs>
+        <path :d="wavePath" fill="url(#waveGradient)" />
+        <path :d="linePath" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" />
+      </svg>
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import { Timer, ArrowUp, ArrowDown, Minus } from '@element-plus/icons-vue'
+import { Timer, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import { useDashboardStore } from '@/stores/dashboard'
 
 const store = useDashboardStore()
@@ -50,81 +53,114 @@ const normalizedHistory = computed(() => {
     const max = Math.max(...history)
     return history.map(val => (val / max) * 100)
 })
+
+const linePath = computed(() => {
+  const data = normalizedHistory.value
+  if (data.length === 0) return ''
+  
+  const width = 200
+  const height = 50
+  const padding = 5
+  const step = width / (data.length - 1)
+  
+  const points = data.map((val, i) => {
+    const x = i * step
+    const y = height - padding - (val / 100) * (height - padding * 2)
+    return `${x},${y}`
+  })
+  
+  return `M ${points.join(' L ')}`
+})
+
+const wavePath = computed(() => {
+  const data = normalizedHistory.value
+  if (data.length === 0) return ''
+  
+  const width = 200
+  const height = 50
+  const padding = 5
+  const step = width / (data.length - 1)
+  
+  const points = data.map((val, i) => {
+    const x = i * step
+    const y = height - padding - (val / 100) * (height - padding * 2)
+    return `${x},${y}`
+  })
+  
+  return `M 0,${height} L ${points.join(' L ')} L ${width},${height} Z`
+})
 </script>
 
 <style lang="scss" scoped>
-.metric-card {
-  background: white; // Or a specific gradient like #2574FF
-  border-radius: 12px;
+.duration-card {
+  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+  border-radius: 16px;
   padding: 24px;
-  color: #1D2433;
-  border: 1px solid #E5E7EB;
+  color: #fff;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
 }
 
-.metric-header {
+.duration-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 20px;
 
-  .metric-icon {
-    width: 40px;
-    height: 40px;
+  .icon-wrapper {
+    width: 36px;
+    height: 36px;
     border-radius: 10px;
-    background: rgba(37, 116, 255, 0.1);
-    color: #2574FF;
+    background: rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
   }
 
-  .metric-title {
+  .duration-label {
     font-size: 14px;
     font-weight: 500;
-    color: #6B7280;
-    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
   }
 }
 
-.metric-value {
-  font-size: 36px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  letter-spacing: -0.02em;
+.duration-main {
+  flex: 1;
 }
 
-.metric-trend {
+.duration-value {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.duration-trend {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
   font-weight: 500;
   
-  &.trend-up { color: #36B37E; }
-  &.trend-down { color: #FF5630; }
-  &.trend-neutral { color: #9CA3AF; }
+  &.trend-up { color: #86EFAC; }
+  &.trend-down { color: #FCA5A5; }
+  &.trend-neutral { color: rgba(255, 255, 255, 0.6); }
 }
 
-.sparkline-container {
-    height: 40px;
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    margin-top: 24px;
-    opacity: 0.8;
-}
-
-.spark-bar {
-    flex: 1;
-    background-color: #2574FF; // Primary Blue
-    border-radius: 2px;
-    min-height: 4px;
-    transition: height 0.5s ease;
+.wave-chart {
+  margin-top: 16px;
+  height: 50px;
+  
+  .wave-svg {
+    width: 100%;
+    height: 100%;
+  }
 }
 </style>

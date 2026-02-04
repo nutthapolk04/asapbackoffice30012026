@@ -7,6 +7,7 @@
         class="logo-image"
       />
       <span>ระบบจัดการหลังบ้าน</span>
+      <span class="version-tag">V1.0.0 202602041642</span>
     </div>
 
     <el-menu
@@ -164,6 +165,18 @@ const handleLogoError = (e) => {
       display: block;
       font-size: 12px;
       color: #999;
+    }
+
+    .version-tag {
+      display: inline-block;
+      font-size: 10px;
+      color: #FF595A;
+      background: #FFF0F0;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-top: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
   }
 

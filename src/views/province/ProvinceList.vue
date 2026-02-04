@@ -104,6 +104,12 @@
           </template>
         </el-table-column>
       </el-table>
+    <!-- Floating Save Button -->
+    <div v-if="hasUnsavedChanges" class="floating-save">
+      <el-button type="success" size="large" :loading="savingOrder" @click="saveOrder">
+        <el-icon><Check /></el-icon>
+        <span style="margin-left: 8px;">บันทึกลำดับ</span>
+      </el-button>
     </div>
   </div>
 </template>
@@ -111,6 +117,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Edit, Delete, Rank, Check } from '@element-plus/icons-vue'
 import Sortable from 'sortablejs'
 import { useApi } from '@/composables/useApi'
 
@@ -183,6 +190,27 @@ onMounted(() => {
   })
 })
 
+const hasUnsavedChanges = ref(false)
+const savingOrder = ref(false)
+
+const saveOrder = async () => {
+  savingOrder.value = true
+  try {
+    const newOrderIds = provinces.value.map(p => p.id)
+    await reorderProvinces(newOrderIds)
+    ElMessage.success('บันทึกลำดับเรียบร้อย')
+    hasUnsavedChanges.value = false
+  } catch (error) {
+    ElMessageBox.alert('ทำรายการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'แจ้งเตือน', {
+      type: 'error',
+      confirmButtonText: 'ตกลง'
+    })
+    fetchData()
+  } finally {
+    savingOrder.value = false
+  }
+}
+
 const initSortable = () => {
   if (!tableRef.value) return
   
@@ -192,7 +220,9 @@ const initSortable = () => {
   Sortable.create(el, {
     handle: '.drag-handle',
     animation: 150,
-    onEnd: async ({ oldIndex, newIndex }) => {
+    onEnd: ({ oldIndex, newIndex }) => {
+      if (oldIndex === newIndex) return
+
       const targetRow = provinces.value.splice(oldIndex, 1)[0]
       provinces.value.splice(newIndex, 0, targetRow)
       
@@ -200,14 +230,7 @@ const initSortable = () => {
         p.order = index + 1
       })
 
-      try {
-        const newOrderIds = provinces.value.map(p => p.id)
-        await reorderProvinces(newOrderIds)
-        ElMessage.success('จัดลำดับสำเร็จ')
-      } catch (error) {
-        ElMessage.error('เกิดข้อผิดพลาดในการจัดลำดับ')
-        fetchData()
-      }
+      hasUnsavedChanges.value = true
     }
   })
 }
@@ -254,6 +277,27 @@ const initSortable = () => {
 
   .branch-tag {
     margin: 0;
+  }
+}
+
+.floating-save {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 </style>

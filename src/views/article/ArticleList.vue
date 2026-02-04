@@ -45,10 +45,23 @@
       </div>
 
       <el-table
+        ref="tableRef"
         v-loading="loading"
         :data="filteredArticles"
         style="width: 100%"
+        row-key="id"
       >
+        <el-table-column label="จัดเรียง" width="70" align="center">
+          <template #default>
+            <el-icon class="drag-handle" style="font-size: 18px;"><Rank /></el-icon>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="ลำดับ" width="80" align="center">
+          <template #default="{ row }">
+            <span class="order-text">{{ row.order || '-' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="รูปปก" width="140" align="center">
           <template #default="{ row }">
             <div class="cover-image-wrapper">
@@ -131,19 +144,32 @@
         </el-table-column>
       </el-table>
     </div>
+
+    <!-- Floating Save Button -->
+    <div v-if="hasUnsavedChanges" class="floating-save">
+      <el-button type="success" size="large" :loading="savingOrder" @click="saveOrder">
+        <el-icon><Check /></el-icon>
+        <span style="margin-left: 8px;">บันทึกลำดับ</span>
+      </el-button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Picture } from '@element-plus/icons-vue'
+import { Search, Picture, Rank, Check } from '@element-plus/icons-vue'
+import Sortable from 'sortablejs'
 import { useApi } from '@/composables/useApi'
 
 // Strapi Admin URL
 const STRAPI_ADMIN_URL = import.meta.env.VITE_STRAPI_API_URL || 'https://my-strapi-api-0fz5.onrender.com'
 
-const { getArticles, getArticleCategories, deleteArticle } = useApi()
+const { getArticles, getArticleCategories, deleteArticle, reorderArticles } = useApi()
+
+const tableRef = ref(null)
+const hasUnsavedChanges = ref(false)
+const savingOrder = ref(false)
 
 const loading = ref(false)
 const articles = ref([])
@@ -222,8 +248,54 @@ const handleDelete = async (row) => {
 }
 
 onMounted(() => {
-  fetchData()
+  fetchData().then(() => {
+    nextTick(() => {
+      initSortable()
+    })
+  })
 })
+
+const initSortable = () => {
+  if (!tableRef.value) return
+  
+  const el = tableRef.value.$el.querySelector('tbody')
+  if (!el) return
+
+  Sortable.create(el, {
+    handle: '.drag-handle',
+    animation: 150,
+    onEnd: ({ oldIndex, newIndex }) => {
+      if (oldIndex === newIndex) return
+
+      const targetRow = articles.value.splice(oldIndex, 1)[0]
+      articles.value.splice(newIndex, 0, targetRow)
+      
+      articles.value.forEach((a, index) => {
+        a.order = index + 1
+      })
+
+      hasUnsavedChanges.value = true
+    }
+  })
+}
+
+const saveOrder = async () => {
+  savingOrder.value = true
+  try {
+    const newOrderIds = articles.value.map(a => a.id)
+    await reorderArticles(newOrderIds)
+    ElMessage.success('บันทึกลำดับเรียบร้อย')
+    hasUnsavedChanges.value = false
+  } catch (error) {
+    ElMessageBox.alert('ทำรายการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'แจ้งเตือน', {
+      type: 'error',
+      confirmButtonText: 'ตกลง'
+    })
+    fetchData()
+  } finally {
+    savingOrder.value = false
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -234,6 +306,11 @@ onMounted(() => {
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.drag-handle {
+  cursor: move;
+  color: #999;
 }
 
 .filters {
@@ -343,6 +420,11 @@ onMounted(() => {
 }
 
 // Status Badge Improvements
+.order-text {
+  font-weight: 600;
+  color: #606266;
+}
+
 .status-badge {
   padding: 4px 12px;
   border-radius: 20px;
@@ -353,6 +435,27 @@ onMounted(() => {
   &--draft {
     background-color: #fff1f0;
     color: #ff4d4f;
+  }
+}
+
+.floating-save {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 </style>

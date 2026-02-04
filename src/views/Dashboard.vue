@@ -1,8 +1,11 @@
 <template>
   <div class="dashboard">
     <div class="page-header">
-      <div>
-        <h1>แดชบอร์ด</h1>
+      <div class="header-main">
+        <div class="title-container">
+          <h1>แดชบอร์ด</h1>
+          <div class="version-badge">v1.0.0</div>
+        </div>
         <p class="text-subtitle">ภาพรวมระบบประจำวันนี้</p>
       </div>
       <div class="header-actions">
@@ -15,7 +18,7 @@
 
     <!-- Stats Grid -->
     <div class="stats-grid">
-      <div class="stat-card stat-card--highlight">
+      <div class="stat-card">
         <div class="stat-card-content">
           <div class="stat-card-icon stat-card-icon--danger">
             <el-icon><ShoppingCart /></el-icon>
@@ -89,7 +92,10 @@
           </div>
           <div class="analytics-row-secondary">
              <UserBehaviorChart />
-             <AvgDurationCard />
+             <div class="stats-cards-mini">
+              <AvgDurationCard />
+              <!-- Space for more small cards if needed -->
+             </div>
           </div>
         </div>
 
@@ -105,7 +111,7 @@
             </el-button>
           </div>
           <el-table
-            :data="dashboardStore.pendingCheckinsList"
+            :data="dashboardStore.pendingCheckinsList.slice(0, 5)"
             style="width: 100%"
             v-loading="dashboardStore.loading"
             :row-class-name="tableRowClassName"
@@ -211,6 +217,23 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.version-badge {
+  background: rgba(255, 56, 57, 0.1);
+  color: #FF3839;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 56, 57, 0.2);
+  letter-spacing: 0.5px;
+}
+
 .text-subtitle {
   color: #6B7280;
   font-size: 14px;
@@ -561,14 +584,20 @@ onMounted(async () => {
 
 .analytics-row-secondary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  height: 250px;
+  grid-template-columns: 1.4fr 0.6fr;
+  gap: 24px;
+  min-height: 280px;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     height: auto;
   }
+}
+
+.stats-cards-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .mb-4 {

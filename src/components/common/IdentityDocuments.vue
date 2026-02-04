@@ -55,10 +55,6 @@
             <el-icon><ZoomIn /></el-icon>
             <span style="margin-left: 6px;">ดูขนาดเต็ม</span>
           </el-button>
-          <el-button size="small" @click="handleDownload(doc)">
-            <el-icon><Download /></el-icon>
-            <span style="margin-left: 6px;">ดาวน์โหลด</span>
-          </el-button>
         </div>
       </div>
     </div>

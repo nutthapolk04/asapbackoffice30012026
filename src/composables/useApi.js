@@ -58,10 +58,18 @@ const mapStrapiArticle = (item) => {
     ? (coverUrl.startsWith('http') ? coverUrl : `${STRAPI_URL}${coverUrl}`)
     : null
 
-  // Get category - Strapi v5: category is direct object, not nested in data
-  const categoryId = attrs.category?.id || attrs.category?.data?.id
-  const categoryDocumentId = attrs.category?.documentId || attrs.category?.data?.documentId
-  const categoryName = attrs.category?.name || attrs.category?.data?.attributes?.name || ''
+  // Map order and metaDescription from description JSON
+  let order = 0
+  let metaDescription = attrs.description
+  if (attrs.description && attrs.description.startsWith('{')) {
+    try {
+      const meta = JSON.parse(attrs.description)
+      order = meta.order || 0
+      metaDescription = meta.metaDescription || ''
+    } catch (e) {
+      // Not JSON, use as is
+    }
+  }
 
   return {
     id: item.id,
@@ -77,12 +85,13 @@ const mapStrapiArticle = (item) => {
     content: content,
     publishedAt: attrs.publishedAt,
     metaTitle: attrs.title, // Fallback
-    metaDescription: attrs.description,
+    metaDescription: metaDescription,
     status: attrs.publishedAt ? 'published' : 'draft',
     tags: Array.isArray(attrs.tags?.data)
       ? attrs.tags.data.map(t => t.attributes?.name || t.name)
       : (Array.isArray(attrs.tags) ? attrs.tags.map(t => t.name || t) : []),
     images: galleryImages,
+    order: order || 0,
     rawCategory: attrs.category
   }
 }
@@ -246,7 +255,7 @@ const mockArticles = ref([
     slug: '10-travel-routes-thailand',
     categoryId: 1,
     category: 'ท่องเที่ยว',
-    coverImage: 'https://placehold.co/302x302/FF595A/white?text=Article+1',
+    coverImage: 'https://images.unsplash.com/photo-1528181304800-2f143c8c798d?w=400&h=300&fit=crop',
     coverImageAlt: '10 เส้นทางท่องเที่ยวยอดนิยม',
     content: '<p>เนื้อหาบทความ...</p>',
     publishedAt: '2025-11-28T09:00:00',
@@ -254,37 +263,72 @@ const mockArticles = ref([
     metaDescription: '',
     status: 'published',
     tags: ['ท่องเที่ยว', 'เที่ยวทะเล', 'เที่ยวภูเขา'],
-    images: []
+    images: [],
+    order: 1
   },
   {
     id: 2,
-    title: 'วิธีเช่ารถสำหรับมือใหม่',
+    title: 'วิธีเช่ารถสำหรับมือใหม่ และข้อควรระวัง',
     slug: 'how-to-rent-car-beginner',
     categoryId: 4,
     category: 'แนะนำ',
-    coverImage: 'https://placehold.co/302x302/2574FF/white?text=Article+2',
+    coverImage: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop',
     content: '<p>เนื้อหาบทความ...</p>',
     publishedAt: '2025-11-27T10:30:00',
     metaTitle: '',
     metaDescription: '',
     status: 'published',
     tags: ['รถประหยัด', 'ขับรถระยะไกล'],
-    images: []
+    images: [],
+    order: 2
   },
   {
     id: 3,
-    title: 'โปรโมชันส่งท้ายปี 2025',
+    title: 'รวมโปรโมชันเช่ารถส่งท้ายปี 2025',
     slug: 'year-end-promotion-2025',
     categoryId: 2,
     category: 'โปรโมชัน',
-    coverImage: 'https://placehold.co/302x302/36B37E/white?text=Article+3',
+    coverImage: 'https://images.unsplash.com/photo-1542362567-b05503f3f7f4?w=400&h=300&fit=crop',
     content: '<p>เนื้อหาบทความ...</p>',
     publishedAt: '2025-11-26T15:45:00',
     metaTitle: '',
     metaDescription: '',
-    status: 'draft',
+    status: 'published',
     tags: ['โปรโมชัน', 'รถEV', 'Deepal'],
-    images: []
+    images: [],
+    order: 3
+  },
+  {
+    id: 4,
+    title: 'เที่ยวภูเก็ตหน้าหนาว พักที่ไหนดี?',
+    slug: 'phuket-winter-stay',
+    categoryId: 1,
+    category: 'ท่องเที่ยว',
+    coverImage: 'https://images.unsplash.com/photo-1589394811159-965edaa2f7b9?w=400&h=300&fit=crop',
+    content: '<p>แนะนำที่พักและกิจกรรมในภูเก็ต...</p>',
+    publishedAt: '2025-12-01T08:00:00',
+    metaTitle: '',
+    metaDescription: '',
+    status: 'published',
+    tags: ['ภูเก็ต', 'ท่องเที่ยว', 'ที่พัก'],
+    images: [],
+    order: 4
+  },
+  {
+    id: 5,
+    title: 'รถเช่า EV สำหรับสายลุย ประหยัดน้ำมัน',
+    slug: 'ev-car-rental-adventure',
+    categoryId: 3,
+    category: 'ข่าวสาร',
+    coverImage: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=300&fit=crop',
+    content: '<p>ทดสอบการใช้งานรถ EV...</p>',
+    publishedAt: '2025-12-02T11:00:00',
+    metaTitle: '',
+    metaDescription: '',
+    status: 'draft',
+    tags: ['รถEV', 'ประหยัดน้ำมัน', 'เทคโนโลยี'],
+    images: [],
+    order: 5
   }
 ])
 
@@ -1353,8 +1397,13 @@ export const useApi = () => {
   const getArticles = async () => {
     try {
       // Endpoint is /api/articles
-      const response = await api.get(`${STRAPI_URL}/api/articles?populate=*&sort=publishedAt:desc`)
-      return response.data.data.map(mapStrapiArticle)
+      const response = await api.get(`${STRAPI_URL}/api/articles?populate=*`)
+      const mapped = response.data.data.map(mapStrapiArticle)
+      // Sort by order, then by publishedAt
+      return mapped.sort((a, b) => {
+        if (a.order !== b.order) return a.order - b.order
+        return new Date(b.publishedAt) - new Date(a.publishedAt)
+      })
     } catch (error) {
       console.warn('Strapi Error, falling back to mock articles:', error)
       return [...mockArticles.value]
@@ -1454,6 +1503,38 @@ export const useApi = () => {
         return true
       }
       return false
+    }
+  }
+
+  const reorderArticles = async (newOrderIds) => {
+    try {
+      const allArticles = await getArticles()
+      await Promise.all(newOrderIds.map(async (id, index) => {
+        const article = allArticles.find(a => a.id === id)
+        if (article) {
+          const docId = article.documentId || id
+          const metaJson = JSON.stringify({
+            order: index + 1,
+            metaDescription: article.metaDescription || ''
+          })
+          await api.put(`${STRAPI_URL}/api/articles/${docId}`, {
+            data: {
+              description: metaJson
+            }
+          })
+        }
+      }))
+      return true
+    } catch (error) {
+      console.warn('Reorder articles failed, falling back to mock:', error)
+      newOrderIds.forEach((id, index) => {
+        const article = mockArticles.value.find(a => a.id === id)
+        if (article) {
+          article.order = index + 1
+        }
+      })
+      mockArticles.value.sort((a, b) => a.order - b.order)
+      return true
     }
   }
 
@@ -1986,6 +2067,8 @@ export const useApi = () => {
     updateArticle,
     deleteArticle,
     getTags,
+    reorderArticles,
+    uploadImage,
     // FAQ Categories
     getFAQCategories,
     getFAQCategory,

@@ -13,35 +13,6 @@
       v-loading="loading"
     >
       <div class="form-section">
-        <div class="form-section-title">รูปข้อมูลผู้ติดต่อ</div>
-
-        <el-form-item prop="heroImage">
-          <div class="image-upload-wrapper">
-            <el-upload
-              class="image-uploader"
-              :show-file-list="false"
-              :auto-upload="false"
-              accept="image/*"
-              @change="handleImageChange"
-            >
-              <div v-if="form.heroImage" class="image-preview">
-                <img :src="form.heroImage" />
-                <div class="image-overlay">
-                  <el-icon><Plus /></el-icon>
-                  <span>เปลี่ยนรูป</span>
-                </div>
-              </div>
-              <div v-else class="upload-placeholder">
-                <el-icon><Plus /></el-icon>
-                <span>อัปโหลดรูปภาพ</span>
-              </div>
-            </el-upload>
-            <div class="image-hint">แนะนำขนาด: 1280 x 400 px</div>
-          </div>
-        </el-form-item>
-      </div>
-
-      <div class="form-section">
         <div class="form-section-title">ข้อมูลติดต่อ</div>
 
         <el-row :gutter="20">

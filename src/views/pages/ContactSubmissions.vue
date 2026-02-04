@@ -166,12 +166,6 @@
 
       <template #footer>
         <el-button @click="detailDialogVisible = false">ปิด</el-button>
-        <a :href="`mailto:${selectedSubmission?.email}?subject=Re: ${selectedSubmission?.subject}`" style="text-decoration: none; margin: 0 12px;">
-          <el-button type="success" plain>
-            <el-icon><Message /></el-icon>
-            <span style="margin-left: 6px;">ตอบกลับทางอีเมล</span>
-          </el-button>
-        </a>
         <el-button
           v-if="selectedSubmission && !selectedSubmission.isRead"
           type="primary"
