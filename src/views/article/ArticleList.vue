@@ -158,7 +158,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Picture, Rank, Check } from '@element-plus/icons-vue'
+import { Search, Picture, Rank, Check, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import Sortable from 'sortablejs'
 import { useApi } from '@/composables/useApi'
 
